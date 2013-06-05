@@ -70,7 +70,7 @@ public class Greep extends Creature
      */
     public static String getAuthorName()
     {
-        return "Anonymous";  // write your name here!
+        return "GitHub Group";  // write your name here!
     }
 
 
