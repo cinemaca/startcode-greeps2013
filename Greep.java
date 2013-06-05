@@ -47,6 +47,12 @@ public class Greep extends Creature
         else {
             move();
             checkFood();
+            if(atWorldEdge())
+            {turn(20);}
+            if(atWater())
+            {turn(20);}
+        }
+
         }
     }
 
