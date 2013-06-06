@@ -45,13 +45,14 @@ public class Greep extends Creature
             }
         }
         else {
-            if(atWorldEdge() || atWater())
-                turn(20);
-                
-                
             move();
             checkFood();
-        
+            if(atWorldEdge())
+            {turn(20);}
+            if(atWater())
+            {turn(20);}
+        }
+
         }
     }
 
@@ -75,7 +76,7 @@ public class Greep extends Creature
      */
     public static String getAuthorName()
     {
-        return "Anonymous";  // write your name here!
+        return "GitHub Group";  // write your name here!
     }
 
 
