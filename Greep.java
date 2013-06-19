@@ -78,11 +78,11 @@ public class Greep extends Creature
         if (carryingTomato()) {
             if(atShip()) {
                 dropTomato();
-                //turn(180);
+                turn(180);
                 resetBrain();
             }
             else {
-                //getBack();
+                getBack();
             }
             move();//done once while having tomatoes
         }
