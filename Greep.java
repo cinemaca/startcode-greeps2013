@@ -52,6 +52,9 @@ public class Greep extends Creature
     * @since 0.3
     */
     public void setBounced(){
+        if(hasBouncedBack())
+            setBackwards();
+
         setFlag(1, true);
     }
     /**
@@ -61,6 +64,14 @@ public class Greep extends Creature
     */
     public void setBackwards(){
         setFlag(2, true);
+    }
+    /**
+    *unsets the "is backwards" flag
+    * @author Russell Fair
+    * @since 0.3
+    */
+    public void unsetBackwards(){
+        setFlag(2, false);
     }
 
     /**
@@ -82,27 +93,28 @@ public class Greep extends Creature
                 resetBrain();
             }
             else {
-                getBack();
+                //need to do Deliver
+                doDelivery();
             }
             move();//done once while having tomatoes
         }
         else {//not found tomatoes yet
         
             if(!atFoodPile()){
-                goSeek();
+                //need to do Search
+                doSearch();
                 move();
+
             }
             else //at food pile...
             {
                 //wait? 
-                turnHome();
+                turnAwayShip();
                 checkFood();
                 resetBrain();
                 
                 if(pileEmpty()){
-                    turn(180);
-                   
-                    goSeek();
+                    doSearch();
                     move();
                 }
                    
@@ -110,85 +122,133 @@ public class Greep extends Creature
            
         }
     }
+    
     /**
-    * rallys a greep back towards the ship
+    * the new method for searching
     * @author Russell Fair
-    * @since 0.1
+    * @since 0.5
     */
-    public void getBack()
-    {
-        //handle the at world edge & touching water (corners) first
-        if(atWorldEdge()&&atWater()){
-            if(!hasBouncedBack()){
-                //has never bounced off edge before
-                setBounced();
-                reRoute();
-            }
-            else{
-                //has bounced before this trip, make backwards facing greep
-                setBackwards();
-                reRoute();
-            }
-        }else if(atWorldEdge()){
-            setBounced();
-            reRoute();
-        }
+    public void doSearch(){
+        int step = getMemory();
 
-        else if (atWater()){//I'm touching water, but not the edge
-            setMemory(199);
-            reRoute();
+        if(atWorldEdge()){
+            setBounced();
+            redirect();
+        }
+        else if(atWater()){
+            setBounced();
+            redirect();
+        }
+        else if(checkBreadcrumb()){
+            turnAwayShip();
         }
         else {
-            //not at water, or edge
-
+            // checkBreadcrumb();
         }
-        continueHome();
 
+        loopCounter(step);
+    }
 
+    /**
+    * the new method for delivering
+    * @author Russell Fair
+    * @since 0.5
+    */
+    public void doDelivery(){
+        int step = getMemory();
+
+        if(atWorldEdge()){
+            setBounced();
+            redirect();
+        }
+        else if(atWater()){
+            setBounced();
+            redirect();
+        }
+        else if(step%5==0){
+            //do something every 5 turns
+            turnHome();
+            
+        }
+        else{
+            //don't turn
+            breadcrumb();
+        }
+        
+        loopCounter(step);
+    }
+
+    /**
+    * leaves the paint trail
+    */
+    public void breadcrumb(){
+        if(carryingTomato())
+            spit("purple");
+    }
+
+    /**
+    * checks the paint trail
+    */
+    public boolean checkBreadcrumb(){
+        if(seePaint("purple"))
+           return true;
+
+       return false;
     }
     /**
-    * makes the greep seek tomatoes
-    * @author Russell Fair
-    * @since 0.3
+    * sets the memory to one less than previous
     */
-    public void goSeek()
-    {
-        //handle the at world edge & touching water (corners) first
-        if(atWorldEdge()&&atWater()){
-            if(!hasBouncedBack()){
-                //has never bounced off edge before, bounce right first
-                setBounced();
-            }
-            else{
-                //has bounced before this trip, make backwards facing greep
-               setBackwards();
-            }
-            reRoute();
-        }
-        else if(atWorldEdge()){ 
-            if(!hasBouncedBack()){
-                setBounced();
-            }
-            reRoute();
-        }
-        else if (atWater()){//I'm touching water, but not the edge
-            if(!hasBouncedBack()){
-                setBackwards();
-            }else if(!isBackwardFacing()){
-                setBackwards();
-            }
-            reRoute();
-        }
-        else if(seePaint("blue")){
-            //not at water, or edge but touching red paint trail
-            turnHome();
-            turn(180);
-        }
+    public void loopCounter(int step){
+        if(step==1)
+            step=255;
 
-        continueSearch();
-
-
+        setMemory(step-1);
     }
+
+    /**
+    * goes right or left
+    */
+    public void redirect(){
+
+
+        if(isBackwardFacing()){
+            changeDirection(false);
+            
+        }else{
+            changeDirection(true);
+            
+        }
+    }
+
+    /**
+    * turn around
+    */
+    public void turnaround(){
+        setRotation(getRotation() - 180);
+    }
+
+
+    /**
+    * turn around
+    */
+    public void turnAwayShip(){
+        turnHome();
+        turn(180);
+    }
+
+    public void changeDirection(boolean neg){
+
+        int angle = (atWorldEdge()) ? 40 : 9;
+        if(atWater() && atWorldEdge())
+            angle = angle*2;
+        
+        if(neg)
+            setRotation(getRotation() - angle);
+        else 
+            setRotation(getRotation() + angle);
+    }
+    
+
     /**
     * sets the greeps memory back to "nothing"
     * @author Russell Fair
