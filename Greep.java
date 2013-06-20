@@ -33,7 +33,7 @@ public class Greep extends Creature
     * @author Russell Fair
     * @since 0.3
     */
-    public boolean hasBouncedBack(){
+    public boolean hasBounced(){
         return getFlag(1);
     }
 
@@ -42,7 +42,7 @@ public class Greep extends Creature
     * @author Russell Fair
     * @since 0.3
     */
-    public boolean isBackwardFacing(){
+    public boolean isBackwards(){
         return getFlag(2);
     }
 
@@ -52,7 +52,7 @@ public class Greep extends Creature
     * @since 0.3
     */
     public void setBounced(){
-        if(!hasBouncedBack())
+        if(!hasBounced())
             setFlag(1, true);
 
         else
@@ -64,7 +64,7 @@ public class Greep extends Creature
     * @since 0.3
     */
     public void setBackwards(){
-        if(!isBackwardFacing())
+        if(!isBackwards())
             setFlag(2, true);
         else 
             setFlag(2, false);
@@ -140,13 +140,13 @@ public class Greep extends Creature
         if(step>=99){
             step=15;
         }
-        else if(step>9){
+        else if(step>7){
             // spit("red");
             move();
         }
-        else if(step<=9){
+        else if(step<=7){
             //go to other side of food pile?
-            
+            turnAwayShip();
         }else{
             turnAwayShip();
         }
@@ -156,7 +156,7 @@ public class Greep extends Creature
             move();
         }
         if(step<=1)
-            step=8;
+            step=7;
 
         checkFood();
         loopCounter(step);
@@ -183,15 +183,8 @@ public class Greep extends Creature
             redirect();
             setMemory(250);
         }
-        else if(step > 240){
+        else if(step > 245){
             //don't do anything for the first few moves or after redirecting...
-        }
-        else if(atShip()){
-
-            //prevent greep from getting stuck at ship.
-            //turnAwayShip();
-            redirect();
-            step=250;
         }
         
 
@@ -208,6 +201,15 @@ public class Greep extends Creature
             //spit("orange");
             //turnAwayShip();
             
+        }else if(step < 240){
+            if(atShip()){
+
+            //prevent greep from getting stuck at ship.
+            turnAwayShip();
+            // redirect();
+            // step=250;
+            }
+        
         }
 
         //prevent searching greeps from going below 200...
@@ -250,13 +252,14 @@ public class Greep extends Creature
             redirect();
             step =195;
         }
-        else if(checkBreadcrumb()&&!seePaint("purple")){
-            bounceOffBreadcrumb();
-            step =195;
-        }
-        else if(step>=192){
+        // else if(checkBreadcrumb()&&!seePaint("purple")){
+        //     bounceOffBreadcrumb();
+        //     step =195;
+        // }
+        else if(step>=191){
             //do nothing for a few turns...
             //prevents breadcrumbs too close to the pile
+            //turnHome();
         }
         else if(step%10==0){
             //do something special every 10 turns
@@ -264,9 +267,9 @@ public class Greep extends Creature
            
             
         }
-        else if (step<192){
+        else if (step<191){
             //don't turn
-            turnHome();
+            //turnHome();
             breadcrumb();
         }else{
             breadcrumb();
@@ -284,7 +287,7 @@ public class Greep extends Creature
     public void breadcrumb(){
         if(carryingTomato()){
             if(atWater()){
-                if(isBackwardFacing()){
+                if(isBackwards()){
                     spit("red");
                 }else{
                     spit("orange");
@@ -350,7 +353,7 @@ public class Greep extends Creature
         // if(isBackwardFacing())
         //     spit("red");
 
-        changeDirection(isBackwardFacing());
+        changeDirection(isBackwards());
 
     }
 
@@ -419,16 +422,17 @@ public class Greep extends Creature
     */
     public void changeDirection(boolean neg){
 
-        int angle = (atWorldEdge() || atShip()) ? 21 : 9;
-        
         int chance = Greenfoot.getRandomNumber(10);
 
-        angle = (chance%3==0)? angle*3: angle;
+        int angle = (atWorldEdge() || atShip()) ? 33 : 10;
+        
+
+        angle = (chance%2==0)? angle*3: angle*1;
         // if (chance ==5 || chance  ==10)
         //     spit("orange");
 
         if(neg){
-            setRotation(getRotation() + angle*-1);
+            setRotation(getRotation() - angle);
             //spit("orange");  
         }
         else {
@@ -468,7 +472,7 @@ public class Greep extends Creature
     {
         setMemory(250);
         setFlag(1, false);
-        setFlag(2, false);
+        setFlag(2, true);
     }
     /**
     * go around something, to the right
