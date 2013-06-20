@@ -183,7 +183,7 @@ public class Greep extends Creature
             redirect();
             setMemory(250);
         }
-        else if(step > 245){
+        else if(step > 248){
             //don't do anything for the first few moves or after redirecting...
         }
         
@@ -424,10 +424,10 @@ public class Greep extends Creature
 
         int chance = Greenfoot.getRandomNumber(10);
 
-        int angle = (atWorldEdge() || atShip()) ? 33 : 10;
+        int angle = (atWorldEdge() || atShip()) ? 33 : 15;
         
 
-        angle = (chance%2==0)? angle*3: angle*1;
+       // angle = (chance%2==0)? angle*3: angle*1;
         // if (chance ==5 || chance  ==10)
         //     spit("orange");
 
