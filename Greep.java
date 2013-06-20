@@ -33,7 +33,7 @@ public class Greep extends Creature
     * @author Russell Fair
     * @since 0.3
     */
-    public boolean hasBouncedBack(){
+    public boolean hasBounced(){
         return getFlag(1);
     }
 
@@ -42,7 +42,7 @@ public class Greep extends Creature
     * @author Russell Fair
     * @since 0.3
     */
-    public boolean isBackwardFacing(){
+    public boolean isBackwards(){
         return getFlag(2);
     }
 
@@ -52,10 +52,11 @@ public class Greep extends Creature
     * @since 0.3
     */
     public void setBounced(){
-        if(hasBouncedBack())
-            setBackwards();
+        if(!hasBounced())
+            setFlag(1, true);
 
-        setFlag(1, true);
+        else
+            setFlag(1, false);
     }
     /**
     *sets the "is backwards" flag
@@ -63,7 +64,18 @@ public class Greep extends Creature
     * @since 0.3
     */
     public void setBackwards(){
-        setFlag(2, true);
+        if(!isBackwards())
+            setFlag(2, true);
+        else 
+            setFlag(2, false);
+    }
+    /**
+    *unsets the "has bounced" flag
+    * @author Russell Fair
+    * @since 0.3
+    */
+    public void unsetBounced(){
+        setFlag(1, false);
     }
     /**
     *unsets the "is backwards" flag
@@ -104,25 +116,52 @@ public class Greep extends Creature
                 //need to do Search
                 doSearch();
                 move();
-
             }
             else //at food pile...
             {
                 //wait? 
-                turnAwayShip();
-                checkFood();
-                resetBrain();
+                doWaiter();
                 
-                if(pileEmpty()){
-                    doSearch();
-                    move();
-                }
                    
             }
            
         }
     }
-    
+    /**
+    * the new method for waiting greeps (at food pile)
+    * @author Russell Fair
+    * @since 0.5
+    */
+    public void doWaiter(){
+
+        
+       
+        int step = getMemory();
+        if(step>=99){
+            step=15;
+        }
+        else if(step>7){
+            // spit("red");
+            move();
+        }
+        else if(step<=7){
+            //go to other side of food pile?
+            turnAwayShip();
+        }else{
+            turnAwayShip();
+        }
+
+        if(pileEmpty()){
+            doSearch();
+            move();
+        }
+        if(step<=1)
+            step=7;
+
+        checkFood();
+        loopCounter(step);
+
+    }
     /**
     * the new method for searching
     * @author Russell Fair
@@ -131,20 +170,54 @@ public class Greep extends Creature
     public void doSearch(){
         int step = getMemory();
 
+
+        if(smellsFood())
+            spit("orange");
+        
         if(atWorldEdge()){
             setBounced();
             redirect();
+            setMemory(250);
         }
         else if(atWater()){
-            setBounced();
             redirect();
+            setMemory(250);
         }
+        else if(step > 248){
+            //don't do anything for the first few moves or after redirecting...
+        }
+        
+
         else if(checkBreadcrumb()){
+            //if sees breadcrumb
+            followBreadcrumb();
+        }
+        else if(step%25==0){
+           
+
+            fanOut();
+        }
+        else if(step%10==0){
+            //spit("orange");
+            //turnAwayShip();
+            
+        }else if(step < 240){
+            if(atShip()){
+
+            //prevent greep from getting stuck at ship.
+            turnAwayShip();
+            // redirect();
+            // step=250;
+            }
+        
+        }
+
+        //prevent searching greeps from going below 200...
+        if(step <= 200){
+            step=250;
             turnAwayShip();
         }
-        else {
-            // checkBreadcrumb();
-        }
+            
 
         loopCounter(step);
     }
@@ -157,23 +230,53 @@ public class Greep extends Creature
     public void doDelivery(){
         int step = getMemory();
 
-        if(atWorldEdge()){
+
+
+        if(step>=200||step<=16){
+            //spit("red");
+            turnHome();
+            step =195;
+        }
+        else if(atWorldEdge()){
             setBounced();
-            redirect();
+            //setBackwards();
+            //redirect();
+            turnHome();
+            //breadcrumb();
+            step =195;
         }
         else if(atWater()){
-            setBounced();
+            // setBounced();
+            //breadcrumb();
+            breadcrumb();
             redirect();
+            step =195;
         }
-        else if(step%5==0){
-            //do something every 5 turns
+        // else if(checkBreadcrumb()&&!seePaint("purple")){
+        //     bounceOffBreadcrumb();
+        //     step =195;
+        // }
+        else if(step>=191){
+            //do nothing for a few turns...
+            //prevents breadcrumbs too close to the pile
+            //turnHome();
+        }
+        else if(step%10==0){
+            //do something special every 10 turns
             turnHome();
+           
             
         }
-        else{
+        else if (step<191){
             //don't turn
+            //turnHome();
+            breadcrumb();
+        }else{
             breadcrumb();
         }
+
+     if(step>199||step<=1)
+            step=195;
         
         loopCounter(step);
     }
@@ -182,19 +285,56 @@ public class Greep extends Creature
     * leaves the paint trail
     */
     public void breadcrumb(){
-        if(carryingTomato())
-            spit("purple");
+        if(carryingTomato()){
+            if(atWater()){
+                if(isBackwards()){
+                    spit("red");
+                }else{
+                    spit("orange");
+                }
+            }else{
+                spit("purple");
+            }
+            
+        }
+            
     }
 
     /**
     * checks the paint trail
     */
     public boolean checkBreadcrumb(){
-        if(seePaint("purple"))
+        if(seePaint("purple")||seePaint("red")||seePaint("orange"))
            return true;
-
-       return false;
+        else
+            return false;
     }
+
+    /**
+    * follows the paint trail
+    */
+    public boolean followBreadcrumb(){
+        if(seePaint("purple"))
+            turnAwayShip();
+        else if(seePaint("red"))
+            goRight();
+        else if (seePaint("orange"))
+            goLeft();
+
+        return false;
+    }
+    /**
+    * stay off other greeps' paint trail
+    */
+    public void bounceOffBreadcrumb(){
+        if(seePaint("red"))
+            redirect();
+        else if (seePaint("orange"))
+            redirect();
+
+    }
+
+
     /**
     * sets the memory to one less than previous
     */
@@ -210,14 +350,11 @@ public class Greep extends Creature
     */
     public void redirect(){
 
+        // if(isBackwardFacing())
+        //     spit("red");
 
-        if(isBackwardFacing()){
-            changeDirection(false);
-            
-        }else{
-            changeDirection(true);
-            
-        }
+        changeDirection(isBackwards());
+
     }
 
     /**
@@ -227,6 +364,50 @@ public class Greep extends Creature
         setRotation(getRotation() - 180);
     }
 
+    public boolean smellsFood(){
+
+        Object tomatoes = sniffXandY();
+
+        if(null != tomatoes)
+            return true;
+
+        else 
+            return false;
+    }
+
+    public Object sniffXandY(){
+
+        int x =10;
+        int y =10;
+        
+        int xcount = 0;
+        int ycount = 0;
+
+        Object tomatoes = null;
+        
+        while(xcount <= x){
+
+            while(ycount<=y){
+                tomatoes = sniffLocation(xcount, ycount);
+                ycount++;
+            }
+            
+            xcount++;
+        }
+
+        return tomatoes;
+           
+    }
+
+    public Object sniffLocation(int x, int y){
+
+        Object found = getOneObjectAtOffset(x, y, TomatoPile.class);
+
+        if(null!=found)
+            return found;
+
+        return null;
+    }
 
     /**
     * turn around
@@ -235,17 +416,38 @@ public class Greep extends Creature
         turnHome();
         turn(180);
     }
-
+    /**
+    * change the direction based on if the greep is at water
+    * 2 in 10 chance the greep will change direction more than 10 (30) degrees
+    */
     public void changeDirection(boolean neg){
 
-        int angle = (atWorldEdge()) ? 40 : 9;
-        if(atWater() && atWorldEdge())
-            angle = angle*2;
+        int chance = Greenfoot.getRandomNumber(10);
+
+        int angle = (atWorldEdge() || atShip()) ? 33 : 30;
         
-        if(neg)
+
+       // angle = (chance%2==0)? angle*3: angle*1;
+        // if (chance ==5 || chance  ==10)
+        //     spit("orange");
+
+        if(neg){
             setRotation(getRotation() - angle);
-        else 
+            //spit("orange");  
+        }
+        else {
+            //spit("red");
             setRotation(getRotation() + angle);
+        }
+    }
+    /*
+    * makes the greeps stay away from home while searching
+    */
+    public void fanOut(){
+        int rando = Greenfoot.getRandomNumber(33);
+        //turnHome();
+        turn(rando);
+
     }
     
 
@@ -258,7 +460,7 @@ public class Greep extends Creature
     {
         setMemory(255);
         setFlag(1, false);
-        setFlag(2, false);
+        setFlag(2, true);
     }
 
     /**
@@ -270,7 +472,7 @@ public class Greep extends Creature
     {
         setMemory(250);
         setFlag(1, false);
-        setFlag(2, false);
+        setFlag(2, true);
     }
     /**
     * go around something, to the right
@@ -279,7 +481,7 @@ public class Greep extends Creature
     */
     public void goRight()
     {
-       turn(-90);
+       changeDirection(true);
     }
 
     /**
@@ -289,103 +491,9 @@ public class Greep extends Creature
     */
     public void goLeft()
     {
-       turn(90);
+       changeDirection(false);
     }
 
-    /**
-    * reroutes the greep towards home
-    * @author Russell Fair
-    * @since 0.1
-    */
-    public void reRoute()
-    {
-        //needs to do something
-        if(isBackwardFacing())
-            bounceLeft();
-        else
-            bounceRight();
-    }
-
-    /** 
-    * continues the route of the greep towards the ship, but away from the water
-    * @author Russell Fair
-    * @since 0.1
-    */    
-    public void continueHome()
-    {
-        int runtype = getMemory();
-        
-        if(runtype==255){
-            turnHome();//first set him to go home
-        }
-        else if(runtype%10==0 && runtype > 200){//every 10th turn?
-            //breadcrumb
-            spit("blue");
-            turnHome();
-        }
-        else if(runtype%10!=0 && runtype > 200){//every turn not / 10?
-            turnHome();
-
-        }else if(runtype==200){
-            runtype = 256;//reset at 200 to continue top of this loop
-        } else if(runtype <200 && runtype >100){
-            //a water go around left
-            if(atWater())
-                reRoute();
-
-            if(runtype%5 ==0){
-                //every 5th turn...
-                turnHome();
-            } else if(runtype==100){
-                runtype =199;
-            } else{
-                bounceLeft();
-            }
-        } else if(runtype < 100){
-            //a water go around right
-        }
-
-        if(runtype ==1)
-            runtype=255;
-            
-        setMemory(runtype-1);
-
-    }
-    /** continues the route of the greep hopefully towards tomatoes
-    * @author Russell Fair
-    * @since 0.1
-    */    
-    public void continueSearch()
-    {
-        int runtype = getMemory();
-        
-        if(runtype==255){
-            turnHome();//first set him to go away from home
-            turn(180);
-        }
-
-        else if(runtype%10==0 && runtype > 200){//every 10th turn?
-            //breadcrumb
-            //spit("blue");
-            // turnHome();
-        }
-        else if(runtype%10!=0 && runtype > 200){//every turn not / 10?
-            // turnHome();
-
-        }else if(runtype==200){
-            runtype = 256;//reset at 200 to continue top of this loop
-        } else if(runtype <200 && runtype >100){
-            
-        } else if(runtype < 100){
-
-        }
-
-        if(runtype ==1)
-            runtype=255;
-            
-        setMemory(runtype-1);
-
-    }
 
     /** checks if greep is loitering at a food pile
     * @author Russell Fair
@@ -435,7 +543,7 @@ public class Greep extends Creature
      * Load a tomato onto *another* creature. This works only if there is another creature
      * and a tomato pile present, otherwise this method does nothing.
      */
-    public final void giveTomato()
+    public void giveTomato()
     {
         loadTomato();
         //if(!seePaint("red"))
@@ -453,31 +561,6 @@ public class Greep extends Creature
         //a near total turn around, but not entirely.
     }
 
-
-    /**
-    * turn right silly greep
-    * @author Russell Fair
-    * @since 0.2
-    */
-    public void bounceRight()
-    {
-        turn(10);
-        //turn(90-Greenfoot.getRandomNumber(90));
-        //a near total turn around, but not entirely.
-    }
-
-    /**
-    * turn left silly greep
-    * @author Russell Fair
-    * @since 0.2
-    */
-    public void bounceLeft()
-    {
-        turn(-10);
-        //turn(360-Greenfoot.getRandomNumber(90));
-        //a near total turn around, but not entirely.
-    }
-
     /**
     * go away silly greep
     * @author Russell Fair
@@ -485,7 +568,7 @@ public class Greep extends Creature
     */
     public void bounce()
     {
-       int rando = Greenfoot.getRandomNumber(360)-Greenfoot.getRandomNumber(360);
+       int rando = Greenfoot.getRandomNumber(180)-Greenfoot.getRandomNumber(180);
        turn(rando);
     }
 
