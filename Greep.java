@@ -424,7 +424,7 @@ public class Greep extends Creature
 
         int chance = Greenfoot.getRandomNumber(10);
 
-        int angle = (atWorldEdge() || atShip()) ? 33 : 15;
+        int angle = (atWorldEdge() || atShip()) ? 33 : 30;
         
 
        // angle = (chance%2==0)? angle*3: angle*1;
