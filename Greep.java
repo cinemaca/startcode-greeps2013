@@ -248,7 +248,7 @@ public class Greep extends Creature
         else if(atWater()){
             // setBounced();
             //breadcrumb();
-            breadcrumb();
+            //breadcrumb();
             redirect();
             step =195;
         }
@@ -267,12 +267,12 @@ public class Greep extends Creature
            
             
         }
-        else if (step<191){
+        else if (step<188){
             //don't turn
             //turnHome();
             breadcrumb();
         }else{
-            breadcrumb();
+            //breadcrumb();
         }
 
      if(step>199||step<=1)
