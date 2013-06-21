@@ -195,16 +195,17 @@ public class Greep extends Creature
             //if sees breadcrumb
             followBreadcrumb();
         }
-        else if(step%25==0){
+        else if(step%100==0){
            
-//redirect();
-            fanOut();
+            redirect();
+            //fanOut();
+
         }
         else if(step%10==0){
             //spit("orange");
             //turnAwayShip();
             
-        }else if(step < 220){
+        }else if(step < 205){
             if(atShip()){
 
             //prevent greep from getting stuck at ship.
@@ -270,7 +271,7 @@ public class Greep extends Creature
            
             
         }
-        else if (step<188){
+        else if (step<175){
             //don't turn
             //turnHome();
             breadcrumb();
@@ -425,14 +426,14 @@ public class Greep extends Creature
     */
     public void changeDirection(boolean neg){
 
-        int chance = Greenfoot.getRandomNumber(10);
+        int chance = Greenfoot.getRandomNumber(7);
 
-        int angle = (atWorldEdge() || atShip()) ? 35 : 30;
+        int angle = (atWorldEdge() || atShip()) ? 20+chance : 33;
         
 
-       // angle = (chance%2==0)? angle*3: angle*1;
-        // if (chance ==5 || chance  ==10)
-        //     spit("orange");
+       // angle = (chance%5==0)? angle*3: angle*1;
+       //  if (chance ==5 || chance  ==10)
+       //      spit("orange");
 
         if(neg){
             setRotation(getRotation() - angle);
@@ -477,7 +478,12 @@ public class Greep extends Creature
             setMemory(254);
 
         setFlag(1, false);
-        setFlag(2, true);
+        int rand = Greenfoot.getRandomNumber(2);
+
+        if(rand%2==0)
+            setFlag(2, true);
+        else
+            setFlag(2, false);
     }
     /**
     * go around something, to the right
