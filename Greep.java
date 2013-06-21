@@ -171,10 +171,13 @@ public class Greep extends Creature
         int step = getMemory();
 
 
-        if(smellsFood())
-            spit("orange");
-        
-        if(atWorldEdge()){
+        if(step==254){
+            //first time...
+            startOut();
+            step = 250;
+        }
+           
+        else if(atWorldEdge()){
             setBounced();
             redirect();
             setMemory(250);
@@ -183,7 +186,7 @@ public class Greep extends Creature
             redirect();
             setMemory(250);
         }
-        else if(step > 248){
+        else if(step > 220){
             //don't do anything for the first few moves or after redirecting...
         }
         
@@ -194,18 +197,18 @@ public class Greep extends Creature
         }
         else if(step%25==0){
            
-
+//redirect();
             fanOut();
         }
         else if(step%10==0){
             //spit("orange");
             //turnAwayShip();
             
-        }else if(step < 240){
+        }else if(step < 220){
             if(atShip()){
 
             //prevent greep from getting stuck at ship.
-            turnAwayShip();
+                redirect();
             // redirect();
             // step=250;
             }
@@ -424,7 +427,7 @@ public class Greep extends Creature
 
         int chance = Greenfoot.getRandomNumber(10);
 
-        int angle = (atWorldEdge() || atShip()) ? 33 : 30;
+        int angle = (atWorldEdge() || atShip()) ? 35 : 30;
         
 
        // angle = (chance%2==0)? angle*3: angle*1;
@@ -444,8 +447,8 @@ public class Greep extends Creature
     * makes the greeps stay away from home while searching
     */
     public void fanOut(){
-        int rando = Greenfoot.getRandomNumber(33);
-        //turnHome();
+        int rando = Greenfoot.getRandomNumber(180);
+        turnHome();
         turn(rando);
 
     }
@@ -458,7 +461,7 @@ public class Greep extends Creature
     */
     public void resetBrain()
     {
-        setMemory(255);
+        setMemory(253);
         setFlag(1, false);
         setFlag(2, true);
     }
@@ -470,7 +473,9 @@ public class Greep extends Creature
     */
     public void setBrain()
     {
-        setMemory(250);
+        if(getMemory()==0)
+            setMemory(254);
+
         setFlag(1, false);
         setFlag(2, true);
     }
@@ -508,6 +513,36 @@ public class Greep extends Creature
             return false;
     }
 
+    /**
+    * the new method for delivering
+    * @author Russell Fair
+    * @since 0.5
+    */
+    public void startOut(){
+        World world = getWorld();
+
+        int x = getX();
+        int y = getY();
+
+        int wx = world.getWidth();
+        int wy = world.getHeight();
+
+        int rotate = 0;
+
+        if(x < wx/2)
+            rotate = rotate+66;
+
+        else 
+            rotate = rotate+233;
+
+        // if(y < wy/2)
+        //     rotate = rotate - 0;
+
+        // else 
+        //     rotate = rotate - 180;
+
+        setRotation(rotate);
+    }
     
     /** checks if the pile is finished
     * @author Russell Fair
