@@ -186,9 +186,9 @@ public class Greep extends Creature
             redirect();
             setMemory(250);
         }
-        else if(step > 220){
-            //don't do anything for the first few moves or after redirecting...
-        }
+        // else if(step > 220){
+        //     //don't do anything for the first few moves or after redirecting...
+        // }
         
 
         else if(checkBreadcrumb()){
@@ -197,7 +197,7 @@ public class Greep extends Creature
         }
         else if(step%100==0){
            
-            redirect();
+            //redirect();
             //fanOut();
 
         }
@@ -219,7 +219,7 @@ public class Greep extends Creature
         //prevent searching greeps from going below 200...
         if(step <= 200){
             step=250;
-            turnAwayShip();
+            //turnAwayShip();
         }
             
 
